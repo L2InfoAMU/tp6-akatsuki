@@ -1,5 +1,6 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -91,17 +92,58 @@ public class Grid implements Iterable<Cell> {
 
     // TODO: Écrire une version correcte de cette méthode.
     private List<Cell> getNeighbours(int rowIndex, int columnIndex) {
-        return null;
+      List<Cell> list = new ArrayList<>();
+      for ( int i =rowIndex-1;i  < rowIndex+2;i++) {
+          if (i<0 || i>= getNumberOfRows())
+              continue;
+          for (int j=columnIndex-1;j<columnIndex+2; j++) {
+              if (j<0 || j>= getNumberOfColumns())
+                  continue;
+              if(!(i==rowIndex&&j==columnIndex)) {
+                  list.add(cells[ i][ j]);
+              }
+          }
+      }
+
+    return list;
     }
 
     // TODO: Écrire une version correcte de cette méthode.
     private int countAliveNeighbours(int rowIndex, int columnIndex) {
-        return 0;
+        int nb=0;
+        for ( int i =rowIndex-1;i  < rowIndex+2;i++) {
+            if (i<0 || i>= getNumberOfRows())
+                continue;
+            for (int j=columnIndex-1;j<columnIndex+2; j++) {
+                if (j<0 || j>= getNumberOfColumns())
+                    continue;
+                if(!(i==rowIndex&&j==columnIndex)) {
+                    if(cells[i][j].isAlive())
+                        nb++;
+                }
+            }
+        }
+
+
+         return nb;
     }
 
     // TODO: Écrire une version correcte de cette méthode.
     private CellState calculateNextState(int rowIndex, int columnIndex) {
-        return null;
+        int reds;
+        if (!(this.cells[rowIndex][columnIndex].isAlive())
+             && this.countAliveNeighbours(rowIndex,columnIndex)==3) {
+            reds=0;
+            for (Cell cell:getNeighbours(rowIndex,columnIndex))
+              if (cell.getState()==CellState.RED)
+                reds++;
+            if (reds>1)
+                return CellState.RED;
+            return CellState.BLUE;
+        }
+        else if ((this.cells[rowIndex][columnIndex].isAlive())&&( (this.countAliveNeighbours(rowIndex,columnIndex)<2)||(this.countAliveNeighbours(rowIndex,columnIndex)>3)))
+            return CellState.DEAD;
+        return this.cells[rowIndex][columnIndex].getState();
     }
 
 
@@ -109,12 +151,21 @@ public class Grid implements Iterable<Cell> {
     // TODO: Écrire une version correcte de cette méthode.
     private CellState[][] calculateNextStates() {
         CellState[][] nextCellState = new CellState[getNumberOfRows()][getNumberOfColumns()];
+        for (int i=0;i<getNumberOfRows();i++){
+            for (int j=0;j<getNumberOfColumns();j++){
+               nextCellState[i][j]=calculateNextState(i,j);
+            }
+        }
         return nextCellState;
     }
 
     // TODO: Écrire une version correcte de cette méthode.
     private void updateStates(CellState[][] nextState) {
-
+        for (int i=0;i<getNumberOfRows();i++){
+            for (int j=0;j<getNumberOfColumns();j++){
+                cells[i][j].setState(nextState[i][j]);
+            }
+        }
     }
 
     /**
@@ -132,7 +183,7 @@ public class Grid implements Iterable<Cell> {
      */
     // TODO: Écrire une version correcte de cette méthode.
     void updateToNextGeneration() {
-
+        updateStates(calculateNextStates());
     }
 
     /**
@@ -140,6 +191,11 @@ public class Grid implements Iterable<Cell> {
      */
     // TODO: Écrire une version correcte de cette méthode.
     void clear() {
+        for (int rowIndex = 0; rowIndex < getNumberOfRows(); rowIndex++) {
+            for (int columnIndex = 0; columnIndex < getNumberOfColumns(); columnIndex++) {
+                cells[rowIndex][columnIndex].setState(CellState.DEAD);
+            }
+        }
 
     }
 
@@ -151,6 +207,18 @@ public class Grid implements Iterable<Cell> {
      */
     // TODO: Écrire une version correcte de cette méthode.
     void randomGeneration(Random random) {
+        for (int rowIndex = 0; rowIndex < getNumberOfRows(); rowIndex++) {
+            for (int columnIndex = 0; columnIndex < getNumberOfColumns(); columnIndex++) {
+               if (random.nextBoolean()){
+                   if (random.nextBoolean())
+                       cells[rowIndex][columnIndex].setState(CellState.RED);
+                   else
+                       cells[rowIndex][columnIndex].setState(CellState.BLUE);
+               }
+               else
+                cells[rowIndex][columnIndex].setState(CellState.DEAD);
 
+            }
+        }
     }
 }
